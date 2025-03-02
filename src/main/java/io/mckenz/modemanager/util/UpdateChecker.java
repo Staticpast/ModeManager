@@ -1,36 +1,29 @@
 package io.mckenz.modemanager.util;
 
 import io.mckenz.modemanager.ModeManager;
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URI;
+import java.io.InputStream;
 import java.net.URL;
-import java.util.logging.Level;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Scanner;
 
 /**
- * Utility class for checking for plugin updates.
+ * Checks for updates to the plugin
  */
 public class UpdateChecker implements Listener {
-
     private final ModeManager plugin;
     private final int resourceId;
-    private String latestVersion;
-    private boolean updateAvailable = false;
     private final boolean notifyAdmins;
+    private boolean updateAvailable = false;
+    private String latestVersion = null;
 
     /**
-     * Create a new update checker
+     * Creates a new UpdateChecker instance
+     * 
      * @param plugin The plugin instance
      * @param resourceId The SpigotMC resource ID
      * @param notifyAdmins Whether to notify admins when they join
@@ -40,69 +33,133 @@ public class UpdateChecker implements Listener {
         this.resourceId = resourceId;
         this.notifyAdmins = notifyAdmins;
         
-        // Register the join event listener
+        // Register this class as an event listener
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
-
+    
     /**
-     * Check for updates
+     * Checks for updates to the plugin
      */
     public void checkForUpdates() {
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 String currentVersion = plugin.getDescription().getVersion();
                 latestVersion = fetchLatestVersion();
                 
                 if (latestVersion == null) {
-                    plugin.getLogger().warning("Failed to check for updates.");
+                    plugin.logDebug("Failed to check for updates.");
                     return;
                 }
                 
-                // Compare versions (simple string comparison, could be improved)
-                if (!currentVersion.equals(latestVersion)) {
-                    updateAvailable = true;
-                    plugin.getLogger().info("A new update is available: " + latestVersion + " (Current: " + currentVersion + ")");
-                    plugin.getLogger().info("Download it at: https://www.spigotmc.org/resources/" + resourceId);
+                // Normalize versions for logging
+                String normalizedCurrent = normalizeVersion(currentVersion);
+                String normalizedLatest = normalizeVersion(latestVersion);
+                
+                // Compare versions using semantic versioning
+                if (!versionsEqual(currentVersion, latestVersion)) {
+                    // Check if the latest version is actually newer
+                    String[] currentParts = normalizedCurrent.split("\\.");
+                    String[] latestParts = normalizedLatest.split("\\.");
+                    
+                    boolean isNewer = false;
+                    for (int i = 0; i < Math.min(currentParts.length, latestParts.length); i++) {
+                        int currentPart = Integer.parseInt(currentParts[i]);
+                        int latestPart = Integer.parseInt(latestParts[i]);
+                        
+                        if (latestPart > currentPart) {
+                            isNewer = true;
+                            break;
+                        } else if (latestPart < currentPart) {
+                            // Current version is actually newer than "latest"
+                            break;
+                        }
+                    }
+                    
+                    if (isNewer) {
+                        updateAvailable = true;
+                        plugin.getLogger().info("A new update is available: " + latestVersion);
+                        plugin.getLogger().info("You are currently running: v" + currentVersion);
+                        plugin.getLogger().info("Download the latest version from: https://www.spigotmc.org/resources/" + resourceId);
+                    } else {
+                        plugin.getLogger().info("You are running the latest version: v" + currentVersion);
+                    }
                 } else {
-                    plugin.getLogger().info("You are running the latest version: " + currentVersion);
+                    plugin.getLogger().info("You are running the latest version: v" + currentVersion);
                 }
             } catch (Exception e) {
-                plugin.getLogger().log(Level.WARNING, "Failed to check for updates: " + e.getMessage(), e);
+                plugin.getLogger().warning("Failed to check for updates: " + e.getMessage());
             }
         });
     }
 
     /**
-     * Fetch the latest version from SpigotMC API
-     * @return The latest version string or null if the check failed
+     * Gets the latest version from SpigotMC
+     * 
+     * @return The latest version, or null if an error occurred
+     * @throws IOException If an I/O error occurs
      */
-    private String fetchLatestVersion() {
-        try {
-            URI uri = new URI("https://api.spigotmc.org/legacy/update.php?resource=" + resourceId);
-            URL url = uri.toURL();
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
-            
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                    return reader.readLine();
-                }
-            } else {
-                plugin.getLogger().warning("Failed to check for updates: HTTP response code " + responseCode);
+    private String fetchLatestVersion() throws IOException {
+        URL url = new URL("https://api.spigotmc.org/legacy/update.php?resource=" + resourceId);
+        
+        try (InputStream inputStream = url.openStream();
+             Scanner scanner = new Scanner(inputStream)) {
+            if (scanner.hasNext()) {
+                return scanner.next();
             }
-        } catch (URISyntaxException e) {
-            plugin.getLogger().log(Level.WARNING, "Failed to create URI for update check", e);
-        } catch (IOException e) {
-            plugin.getLogger().log(Level.WARNING, "Failed to check for updates", e);
         }
+        
         return null;
+    }
+    
+    /**
+     * Compare two version strings for equality
+     * 
+     * @param version1 The first version string
+     * @param version2 The second version string
+     * @return True if the versions are equal, false otherwise
+     */
+    private boolean versionsEqual(String version1, String version2) {
+        // Normalize both versions
+        String normalizedVersion1 = normalizeVersion(version1);
+        String normalizedVersion2 = normalizeVersion(version2);
+        
+        // Simple string comparison after normalization
+        return normalizedVersion1.equals(normalizedVersion2);
+    }
+    
+    /**
+     * Normalize a version string for comparison
+     * @param version The version string to normalize
+     * @return The normalized version string
+     */
+    private String normalizeVersion(String version) {
+        // Remove all 'v' prefixes (handles cases like 'vv1.1.0')
+        while (version.startsWith("v")) {
+            version = version.substring(1);
+        }
+        
+        // Remove any suffixes like -RELEASE, -SNAPSHOT, etc.
+        int dashIndex = version.indexOf('-');
+        if (dashIndex > 0) {
+            version = version.substring(0, dashIndex);
+        }
+        
+        // Trim any whitespace
+        version = version.trim();
+        
+        // Ensure consistent format for comparison
+        // For example, convert "1.1" to "1.1.0" if needed
+        String[] parts = version.split("\\.");
+        if (parts.length == 2) {
+            version = version + ".0";
+        }
+        
+        return version;
     }
 
     /**
-     * Check if an update is available
+     * Checks if an update is available
+     * 
      * @return True if an update is available, false otherwise
      */
     public boolean isUpdateAvailable() {
@@ -110,33 +167,34 @@ public class UpdateChecker implements Listener {
     }
 
     /**
-     * Get the latest version
-     * @return The latest version string
+     * Gets the latest version
+     * 
+     * @return The latest version
      */
     public String getLatestVersion() {
         return latestVersion;
     }
 
     /**
-     * Notify admins when they join if an update is available
+     * Notifies admins when they join if an update is available
      * 
      * @param event The player join event
      */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        
-        // Only notify players with permission if notifications are enabled
-        if (updateAvailable && notifyAdmins && player.hasPermission("modemanager.update")) {
-            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                Map<String, String> placeholders = new HashMap<>();
-                placeholders.put("latest", latestVersion);
-                placeholders.put("current", plugin.getDescription().getVersion());
-                placeholders.put("url", "https://www.spigotmc.org/resources/" + resourceId);
+        if (updateAvailable && notifyAdmins && event.getPlayer().hasPermission("modemanager.update")) {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                String prefix = plugin.getConfig().getString("messages.prefix", "&8[&eModeManager&8] ");
+                String updateAvailableMsg = plugin.getConfig().getString("messages.update-available", "&aA new update is available: &f%latest% &a(Current: &f%current%&a)");
+                String updateDownloadMsg = plugin.getConfig().getString("messages.update-download", "&aDownload it at: &f%url%");
                 
-                plugin.getMessageUtil().sendMessage(player, "update-available", placeholders);
-                plugin.getMessageUtil().sendMessage(player, "update-download", placeholders);
-            }, 40L); // Delay for 2 seconds after join
+                updateAvailableMsg = updateAvailableMsg.replace("%latest%", latestVersion)
+                                                      .replace("%current%", plugin.getDescription().getVersion());
+                updateDownloadMsg = updateDownloadMsg.replace("%url%", "spigotmc.org/resources/" + resourceId);
+                
+                event.getPlayer().sendMessage(MessageUtil.colorize(prefix + updateAvailableMsg));
+                event.getPlayer().sendMessage(MessageUtil.colorize(prefix + updateDownloadMsg));
+            }, 40L); // 2 seconds delay
         }
     }
-}
+} 
