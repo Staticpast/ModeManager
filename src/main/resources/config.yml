@@ -210,7 +210,8 @@ update-checker:
   enabled: true
   
   # The SpigotMC resource ID for the plugin
-  resource-id: 0
+  # https://www.spigotmc.org/resources/modemanager.122976/
+  resource-id: 122976
   
   # Notify admins when they join if an update is available
   notify-admins: true

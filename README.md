@@ -4,7 +4,7 @@ A Minecraft Spigot plugin that allows players to switch between survival and cre
 
 [![Java](https://img.shields.io/badge/Java-21-red.svg)](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.21.4-green.svg)](https://www.minecraft.net/)
-[![SpigotMC](https://img.shields.io/badge/SpigotMC-ModeManager-orange)](https://www.spigotmc.org/resources/)
+[![SpigotMC](https://img.shields.io/badge/SpigotMC-ModeManager-orange)](https://www.spigotmc.org/resources/modemanager.122976/)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/paypalme/mckenzio)
 
 ## Features
@@ -18,7 +18,7 @@ A Minecraft Spigot plugin that allows players to switch between survival and cre
 
 ## Installation
 
-1. Download the latest release from [Spigot](https://www.spigotmc.org/resources/) or [GitHub Releases](https://github.com/McKenzieJDan/ModeManager/releases)
+1. Download the latest release from [Spigot](https://www.spigotmc.org/resources/modemanager.122976/) or [GitHub Releases](https://github.com/McKenzieJDan/ModeManager/releases)
 2. Place the JAR file in your server's `plugins` folder
 3. Restart your server
 4. Configure the plugin in the `config.yml` file
