@@ -5,7 +5,6 @@ import io.mckenz.modemanager.data.ModeChangeRecord;
 import io.mckenz.modemanager.data.PlayerModeData;
 import io.mckenz.modemanager.services.ModeService;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -78,7 +77,7 @@ public class ModeCommand implements CommandExecutor, TabCompleter {
      */
     private boolean handleSurvivalCommand(CommandSender sender) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players.");
+            plugin.getMessageUtil().sendMessage(sender, "player-only");
             return true;
         }
         
@@ -100,7 +99,7 @@ public class ModeCommand implements CommandExecutor, TabCompleter {
      */
     private boolean handleCreativeCommand(CommandSender sender) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players.");
+            plugin.getMessageUtil().sendMessage(sender, "player-only");
             return true;
         }
         
@@ -122,40 +121,48 @@ public class ModeCommand implements CommandExecutor, TabCompleter {
      */
     private boolean handleStatusCommand(CommandSender sender) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players.");
+            plugin.getMessageUtil().sendMessage(sender, "player-only");
             return true;
         }
         
         Player player = (Player) sender;
         
         if (!player.hasPermission("modemanager.use")) {
-            plugin.getMessageUtil().sendMessage(player, "no-permission");
+            plugin.getMessageUtil().sendMessage(sender, "no-permission");
             return true;
         }
         
         PlayerModeData data = plugin.getPlayerDataManager().getPlayerData(player);
         
-        player.sendMessage(ChatColor.GOLD + "=== Mode Status ===");
-        player.sendMessage(ChatColor.GRAY + "Current mode: " + ChatColor.YELLOW + data.getCurrentMode().name());
+        plugin.getMessageUtil().sendMessageWithoutPrefix(sender, "status-header");
+        
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("mode", data.getCurrentMode().name());
+        plugin.getMessageUtil().sendMessageWithoutPrefix(sender, "status-current-mode", placeholders);
         
         // Show cooldown if applicable
         int cooldown = plugin.getConfig().getInt("mode-switching.cooldown-seconds", 30);
         if (data.isInCooldown(cooldown)) {
             long remainingCooldown = data.getRemainingCooldown(cooldown);
-            player.sendMessage(ChatColor.GRAY + "Cooldown: " + ChatColor.WHITE + remainingCooldown + " seconds");
+            placeholders = new HashMap<>();
+            placeholders.put("time", String.valueOf(remainingCooldown));
+            plugin.getMessageUtil().sendMessageWithoutPrefix(sender, "status-cooldown-active", placeholders);
         } else {
-            player.sendMessage(ChatColor.GRAY + "Cooldown: " + ChatColor.YELLOW + "Ready");
+            plugin.getMessageUtil().sendMessageWithoutPrefix(sender, "status-cooldown-ready");
         }
         
         // Show recent mode changes
-        player.sendMessage(ChatColor.GRAY + "Recent mode changes:");
+        plugin.getMessageUtil().sendMessageWithoutPrefix(sender, "status-recent-changes");
         List<ModeChangeRecord> history = data.getModeHistory();
         int count = Math.min(5, history.size());
         for (int i = history.size() - 1; i >= history.size() - count; i--) {
             ModeChangeRecord record = history.get(i);
-            player.sendMessage(ChatColor.GRAY + "- " + record.getFormattedTimestamp() + ": " + 
-                              ChatColor.YELLOW + record.getGameMode().name() + 
-                              ChatColor.GRAY + " (" + record.getReason() + ")");
+            Map<String, String> recordPlaceholders = new HashMap<>();
+            recordPlaceholders.put("timestamp", record.getFormattedTimestamp());
+            recordPlaceholders.put("mode", record.getGameMode().name());
+            recordPlaceholders.put("reason", record.getReason());
+            
+            plugin.getMessageUtil().sendMessageWithoutPrefix(sender, "status-history-entry", recordPlaceholders);
         }
         
         return true;
@@ -175,7 +182,7 @@ public class ModeCommand implements CommandExecutor, TabCompleter {
         }
         
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.GRAY + "Usage: " + ChatColor.WHITE + "/mode admin [list|check <player>|force <player> <mode> [reason]]");
+            plugin.getMessageUtil().sendMessage(sender, "admin-usage");
             return true;
         }
         
@@ -187,21 +194,21 @@ public class ModeCommand implements CommandExecutor, TabCompleter {
                 
             case "check":
                 if (args.length < 3) {
-                    sender.sendMessage(ChatColor.GRAY + "Usage: " + ChatColor.WHITE + "/mode admin check <player>");
+                    plugin.getMessageUtil().sendMessage(sender, "admin-check-usage");
                     return true;
                 }
                 return handleAdminCheckCommand(sender, args[2]);
                 
             case "force":
                 if (args.length < 4) {
-                    sender.sendMessage(ChatColor.GRAY + "Usage: " + ChatColor.WHITE + "/mode admin force <player> <mode> [reason]");
+                    plugin.getMessageUtil().sendMessage(sender, "admin-force-usage");
                     return true;
                 }
                 String reason = args.length > 4 ? String.join(" ", Arrays.copyOfRange(args, 4, args.length)) : "";
                 return handleAdminForceCommand(sender, args[2], args[3], reason);
                 
             default:
-                sender.sendMessage(ChatColor.GRAY + "Unknown admin command. Use " + ChatColor.WHITE + "/mode admin [list|check <player>|force <player> <mode> [reason]]");
+                plugin.getMessageUtil().sendMessage(sender, "admin-unknown-command");
                 return true;
         }
     }
@@ -218,13 +225,17 @@ public class ModeCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         
-        sender.sendMessage(ChatColor.GOLD + "=== Player Modes ===");
+        plugin.getMessageUtil().sendMessage(sender, "admin-list-header");
         
         for (Player player : Bukkit.getOnlinePlayers()) {
             PlayerModeData data = plugin.getPlayerDataManager().getPlayerData(player);
             GameMode mode = data.getCurrentMode();
             
-            sender.sendMessage(ChatColor.YELLOW + player.getName() + ChatColor.GRAY + ": " + ChatColor.YELLOW + mode.name());
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("player", player.getName());
+            placeholders.put("mode", mode.name());
+            
+            plugin.getMessageUtil().sendMessage(sender, "admin-list-entry", placeholders);
         }
         
         return true;
@@ -246,32 +257,44 @@ public class ModeCommand implements CommandExecutor, TabCompleter {
         Player target = Bukkit.getPlayer(playerName);
         
         if (target == null) {
-            sender.sendMessage(ChatColor.GRAY + "Player not found: " + ChatColor.YELLOW + playerName);
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("player", playerName);
+            plugin.getMessageUtil().sendMessage(sender, "player-not-found", placeholders);
             return true;
         }
         
         PlayerModeData data = plugin.getPlayerDataManager().getPlayerData(target);
         
-        sender.sendMessage(ChatColor.GOLD + "=== Mode History for " + target.getName() + " ===");
-        sender.sendMessage(ChatColor.GRAY + "Current mode: " + ChatColor.YELLOW + data.getCurrentMode().name());
+        Map<String, String> headerPlaceholders = new HashMap<>();
+        headerPlaceholders.put("player", target.getName());
+        plugin.getMessageUtil().sendMessage(sender, "admin-check-header", headerPlaceholders);
+        
+        Map<String, String> modePlaceholders = new HashMap<>();
+        modePlaceholders.put("mode", data.getCurrentMode().name());
+        plugin.getMessageUtil().sendMessage(sender, "admin-check-current-mode", modePlaceholders);
         
         // Show cooldown if applicable
         int cooldown = plugin.getConfig().getInt("mode-switching.cooldown-seconds", 30);
         if (data.isInCooldown(cooldown)) {
             long remainingCooldown = data.getRemainingCooldown(cooldown);
-            sender.sendMessage(ChatColor.GRAY + "Cooldown: " + ChatColor.WHITE + remainingCooldown + " seconds");
+            Map<String, String> cooldownPlaceholders = new HashMap<>();
+            cooldownPlaceholders.put("time", String.valueOf(remainingCooldown));
+            plugin.getMessageUtil().sendMessage(sender, "admin-check-cooldown-active", cooldownPlaceholders);
         } else {
-            sender.sendMessage(ChatColor.GRAY + "Cooldown: " + ChatColor.YELLOW + "Ready");
+            plugin.getMessageUtil().sendMessage(sender, "admin-check-cooldown-ready");
         }
         
         // Show mode history
-        sender.sendMessage(ChatColor.GRAY + "Mode history:");
+        plugin.getMessageUtil().sendMessage(sender, "admin-check-history");
         List<ModeChangeRecord> history = data.getModeHistory();
         for (int i = history.size() - 1; i >= 0; i--) {
             ModeChangeRecord record = history.get(i);
-            sender.sendMessage(ChatColor.GRAY + "- " + record.getFormattedTimestamp() + ": " + 
-                              ChatColor.YELLOW + record.getGameMode().name() + 
-                              ChatColor.GRAY + " (" + record.getReason() + ")");
+            Map<String, String> recordPlaceholders = new HashMap<>();
+            recordPlaceholders.put("timestamp", record.getFormattedTimestamp());
+            recordPlaceholders.put("mode", record.getGameMode().name());
+            recordPlaceholders.put("reason", record.getReason());
+            
+            plugin.getMessageUtil().sendMessage(sender, "admin-check-history-entry", recordPlaceholders);
         }
         
         return true;
@@ -295,7 +318,9 @@ public class ModeCommand implements CommandExecutor, TabCompleter {
         Player target = Bukkit.getPlayer(playerName);
         
         if (target == null) {
-            sender.sendMessage(ChatColor.GRAY + "Player not found: " + ChatColor.YELLOW + playerName);
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("player", playerName);
+            plugin.getMessageUtil().sendMessage(sender, "player-not-found", placeholders);
             return true;
         }
         
@@ -305,11 +330,13 @@ public class ModeCommand implements CommandExecutor, TabCompleter {
             
             // Only allow SURVIVAL and CREATIVE modes
             if (mode != GameMode.SURVIVAL && mode != GameMode.CREATIVE) {
-                sender.sendMessage(ChatColor.GRAY + "Only SURVIVAL and CREATIVE modes are supported.");
+                plugin.getMessageUtil().sendMessage(sender, "invalid-mode");
                 return true;
             }
         } catch (IllegalArgumentException e) {
-            sender.sendMessage(ChatColor.GRAY + "Invalid game mode: " + ChatColor.YELLOW + modeName);
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("mode", modeName);
+            plugin.getMessageUtil().sendMessage(sender, "invalid-mode", placeholders);
             return true;
         }
         
@@ -317,9 +344,15 @@ public class ModeCommand implements CommandExecutor, TabCompleter {
         boolean success = modeService.forcePlayerMode(target, mode, reason, adminName);
         
         if (success) {
-            sender.sendMessage(ChatColor.GRAY + "Forced " + ChatColor.YELLOW + target.getName() + ChatColor.GRAY + " into " + ChatColor.YELLOW + mode.name() + ChatColor.GRAY + " mode.");
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("player", target.getName());
+            placeholders.put("mode", mode.name());
+            plugin.getMessageUtil().sendMessage(sender, "admin-force-success", placeholders);
         } else {
-            sender.sendMessage(ChatColor.GRAY + "Failed to force " + ChatColor.YELLOW + target.getName() + ChatColor.GRAY + " into " + ChatColor.YELLOW + mode.name() + ChatColor.GRAY + " mode.");
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("player", target.getName());
+            placeholders.put("mode", mode.name());
+            plugin.getMessageUtil().sendMessage(sender, "admin-force-failed", placeholders);
         }
         
         return true;
@@ -331,24 +364,24 @@ public class ModeCommand implements CommandExecutor, TabCompleter {
      * @param sender The command sender
      */
     private void showHelp(CommandSender sender) {
-        sender.sendMessage(ChatColor.GOLD + "=== ModeManager Commands ===");
+        plugin.getMessageUtil().sendMessage(sender, "help-header");
         
         if (sender.hasPermission("modemanager.use")) {
-            sender.sendMessage(ChatColor.WHITE + "/mode survival " + ChatColor.GRAY + "- Switch to survival mode");
+            plugin.getMessageUtil().sendMessageWithoutPrefix(sender, "help-survival");
             
             if (sender.hasPermission("modemanager.creative")) {
-                sender.sendMessage(ChatColor.WHITE + "/mode creative " + ChatColor.GRAY + "- Switch to creative mode");
+                plugin.getMessageUtil().sendMessageWithoutPrefix(sender, "help-creative");
             }
             
-            sender.sendMessage(ChatColor.WHITE + "/mode status " + ChatColor.GRAY + "- Check your current mode and statistics");
+            plugin.getMessageUtil().sendMessageWithoutPrefix(sender, "help-status");
         }
         
         if (sender.hasPermission("modemanager.admin")) {
-            sender.sendMessage(ChatColor.WHITE + "/mode admin list " + ChatColor.GRAY + "- List all players and their current modes");
-            sender.sendMessage(ChatColor.WHITE + "/mode admin check <player> " + ChatColor.GRAY + "- Check a specific player's mode history");
+            plugin.getMessageUtil().sendMessageWithoutPrefix(sender, "help-admin-list");
+            plugin.getMessageUtil().sendMessageWithoutPrefix(sender, "help-admin-check");
             
             if (sender.hasPermission("modemanager.admin.force")) {
-                sender.sendMessage(ChatColor.WHITE + "/mode admin force <player> <mode> [reason] " + ChatColor.GRAY + "- Force a player into a specific mode");
+                plugin.getMessageUtil().sendMessageWithoutPrefix(sender, "help-admin-force");
             }
         }
     }

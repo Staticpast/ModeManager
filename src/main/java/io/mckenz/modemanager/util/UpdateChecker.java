@@ -15,6 +15,8 @@ import java.net.URI;
 import java.net.URL;
 import java.util.logging.Level;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Utility class for checking for plugin updates.
@@ -117,6 +119,7 @@ public class UpdateChecker implements Listener {
 
     /**
      * Notify admins when they join if an update is available
+     * 
      * @param event The player join event
      */
     @EventHandler
@@ -126,11 +129,13 @@ public class UpdateChecker implements Listener {
         // Only notify players with permission if notifications are enabled
         if (updateAvailable && notifyAdmins && player.hasPermission("modemanager.update")) {
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                player.sendMessage(ChatColor.GREEN + "[ModeManager] " + ChatColor.YELLOW + "A new update is available: " + 
-                                  ChatColor.WHITE + latestVersion + ChatColor.YELLOW + " (Current: " + 
-                                  ChatColor.WHITE + plugin.getDescription().getVersion() + ChatColor.YELLOW + ")");
-                player.sendMessage(ChatColor.GREEN + "[ModeManager] " + ChatColor.YELLOW + "Download it at: " + 
-                                  ChatColor.WHITE + "https://www.spigotmc.org/resources/" + resourceId);
+                Map<String, String> placeholders = new HashMap<>();
+                placeholders.put("latest", latestVersion);
+                placeholders.put("current", plugin.getDescription().getVersion());
+                placeholders.put("url", "https://www.spigotmc.org/resources/" + resourceId);
+                
+                plugin.getMessageUtil().sendMessage(player, "update-available", placeholders);
+                plugin.getMessageUtil().sendMessage(player, "update-download", placeholders);
             }, 40L); // Delay for 2 seconds after join
         }
     }

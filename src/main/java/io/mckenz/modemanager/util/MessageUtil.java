@@ -52,7 +52,48 @@ public class MessageUtil {
             message = message.replace("%" + entry.getKey() + "%", entry.getValue());
         }
         
-        sender.sendMessage(colorize(message));
+        // Check if this message should be sent to the action bar
+        boolean useActionBar = plugin.getConfig().getBoolean("messages.action-bar-messages." + messageKey, false);
+        
+        if (useActionBar && sender instanceof Player) {
+            sendActionBar((Player) sender, colorize(message));
+        } else {
+            sender.sendMessage(colorize(message));
+        }
+    }
+    
+    /**
+     * Send an action bar message to a player
+     * 
+     * @param player The player
+     * @param message The message to send
+     */
+    public void sendActionBar(Player player, String message) {
+        player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, 
+                                   net.md_5.bungee.api.chat.TextComponent.fromLegacyText(message));
+    }
+    
+    /**
+     * Send an action bar message to a player with placeholders
+     * 
+     * @param player The player
+     * @param messageKey The message key in the config
+     * @param placeholders The placeholders to replace
+     */
+    public void sendActionBarMessage(Player player, String messageKey, Map<String, String> placeholders) {
+        String message = plugin.getConfig().getString("messages." + messageKey, "");
+        
+        if (message.isEmpty()) {
+            plugin.logDebug("Message key not found: " + messageKey);
+            return;
+        }
+        
+        // Replace placeholders
+        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+            message = message.replace("%" + entry.getKey() + "%", entry.getValue());
+        }
+        
+        sendActionBar(player, colorize(message));
     }
     
     /**
@@ -69,9 +110,10 @@ public class MessageUtil {
             return "";
         }
         
-        // Add prefix if the message doesn't already have it
+        // Add prefix if the message doesn't already have it and it's not an action bar message
+        boolean isActionBarMessage = plugin.getConfig().getBoolean("messages.action-bar-messages." + messageKey, false);
         String prefix = plugin.getConfig().getString("messages.prefix", "");
-        if (!message.startsWith(prefix) && !prefix.isEmpty()) {
+        if (!message.startsWith(prefix) && !prefix.isEmpty() && !isActionBarMessage) {
             message = prefix + message;
         }
         
@@ -107,7 +149,56 @@ public class MessageUtil {
         }
         
         String finalMessage = colorize(message);
-        plugin.getServer().getOnlinePlayers().forEach(player -> player.sendMessage(finalMessage));
-        plugin.getServer().getConsoleSender().sendMessage(finalMessage);
+        
+        // Check if this message should be sent to the action bar
+        boolean useActionBar = plugin.getConfig().getBoolean("messages.action-bar-messages." + messageKey, false);
+        
+        if (useActionBar) {
+            plugin.getServer().getOnlinePlayers().forEach(player -> sendActionBar(player, finalMessage));
+            plugin.getServer().getConsoleSender().sendMessage(finalMessage); // Console still gets regular message
+        } else {
+            plugin.getServer().getOnlinePlayers().forEach(player -> player.sendMessage(finalMessage));
+            plugin.getServer().getConsoleSender().sendMessage(finalMessage);
+        }
+    }
+    
+    /**
+     * Send a message to a player without adding the prefix
+     * 
+     * @param sender The command sender
+     * @param messageKey The message key in the config
+     */
+    public void sendMessageWithoutPrefix(CommandSender sender, String messageKey) {
+        sendMessageWithoutPrefix(sender, messageKey, new HashMap<>());
+    }
+    
+    /**
+     * Send a message to a player with placeholders but without adding the prefix
+     * 
+     * @param sender The command sender
+     * @param messageKey The message key in the config
+     * @param placeholders The placeholders to replace
+     */
+    public void sendMessageWithoutPrefix(CommandSender sender, String messageKey, Map<String, String> placeholders) {
+        String message = plugin.getConfig().getString("messages." + messageKey, "");
+        
+        if (message.isEmpty()) {
+            plugin.logDebug("Message key not found: " + messageKey);
+            return;
+        }
+        
+        // Replace placeholders
+        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+            message = message.replace("%" + entry.getKey() + "%", entry.getValue());
+        }
+        
+        // Check if this message should be sent to the action bar
+        boolean useActionBar = plugin.getConfig().getBoolean("messages.action-bar-messages." + messageKey, false);
+        
+        if (useActionBar && sender instanceof Player) {
+            sendActionBar((Player) sender, colorize(message));
+        } else {
+            sender.sendMessage(colorize(message));
+        }
     }
 } 

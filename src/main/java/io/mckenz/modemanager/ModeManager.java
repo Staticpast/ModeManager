@@ -9,6 +9,7 @@ import io.mckenz.modemanager.data.PlayerDataManager;
 import io.mckenz.modemanager.data.PlayerModeData;
 import io.mckenz.modemanager.listeners.BlockListener;
 import io.mckenz.modemanager.listeners.EntityListener;
+import io.mckenz.modemanager.listeners.ItemRestrictionListener;
 import io.mckenz.modemanager.listeners.PlayerListener;
 import io.mckenz.modemanager.services.ModeService;
 import io.mckenz.modemanager.util.MessageUtil;
@@ -39,6 +40,8 @@ public class ModeManager extends JavaPlugin implements ModeManagerAPI {
     private CreativeItemFrameManager creativeItemFrameManager;
     private ModeService modeService;
     private MessageUtil messageUtil;
+    private ItemRestrictionListener itemRestrictionListener;
+    private EntityListener entityListener;
     
     @Override
     public void onEnable() {
@@ -53,10 +56,15 @@ public class ModeManager extends JavaPlugin implements ModeManagerAPI {
         modeService = new ModeService(this);
         messageUtil = new MessageUtil(this);
         
+        // Initialize listeners
+        itemRestrictionListener = new ItemRestrictionListener(this);
+        entityListener = new EntityListener(this);
+        
         // Register events
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         getServer().getPluginManager().registerEvents(new BlockListener(this), this);
-        getServer().getPluginManager().registerEvents(new EntityListener(this), this);
+        getServer().getPluginManager().registerEvents(entityListener, this);
+        getServer().getPluginManager().registerEvents(itemRestrictionListener, this);
         
         // Register commands
         ModeCommand commandExecutor = new ModeCommand(this, modeService);
@@ -93,6 +101,16 @@ public class ModeManager extends JavaPlugin implements ModeManagerAPI {
         config = getConfig();
         enabled = config.getBoolean("enabled", true);
         debug = config.getBoolean("debug", false);
+        
+        // Reload item restrictions if the listener is initialized
+        if (itemRestrictionListener != null) {
+            itemRestrictionListener.reloadRestrictedItems();
+        }
+        
+        // Reload entity restrictions if the listener is initialized
+        if (entityListener != null) {
+            entityListener.reloadRestrictedEntities();
+        }
         
         logDebug("Configuration loaded");
     }

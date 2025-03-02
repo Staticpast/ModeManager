@@ -24,6 +24,7 @@ public class PlayerModeData {
     private ItemStack creativeOffHandItem;
     private Instant lastModeSwitch;
     private final List<ModeChangeRecord> modeHistory;
+    private boolean firstModeChangeAfterJoin;
     
     /**
      * Constructor for PlayerModeData
@@ -36,6 +37,7 @@ public class PlayerModeData {
         this.currentMode = initialMode;
         this.lastModeSwitch = Instant.now();
         this.modeHistory = new ArrayList<>();
+        this.firstModeChangeAfterJoin = true;
         
         // Add initial mode to history
         this.modeHistory.add(new ModeChangeRecord(initialMode, Instant.now(), "Initial mode"));
@@ -252,5 +254,23 @@ public class PlayerModeData {
     public long getRemainingCooldown(int cooldownSeconds) {
         Instant cooldownEnd = lastModeSwitch.plusSeconds(cooldownSeconds);
         return Math.max(0, cooldownEnd.getEpochSecond() - Instant.now().getEpochSecond());
+    }
+    
+    /**
+     * Check if this is the first mode change after joining
+     * 
+     * @return True if this is the first mode change after joining, false otherwise
+     */
+    public boolean isFirstModeChangeAfterJoin() {
+        return firstModeChangeAfterJoin;
+    }
+    
+    /**
+     * Set whether this is the first mode change after joining
+     * 
+     * @param firstModeChangeAfterJoin Whether this is the first mode change after joining
+     */
+    public void setFirstModeChangeAfterJoin(boolean firstModeChangeAfterJoin) {
+        this.firstModeChangeAfterJoin = firstModeChangeAfterJoin;
     }
 } 

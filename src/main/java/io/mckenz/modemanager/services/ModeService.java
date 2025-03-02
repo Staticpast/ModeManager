@@ -41,9 +41,15 @@ public class ModeService {
             return true;
         }
         
-        // Check cooldown
+        // Check if player has permission for the requested mode
+        if (newMode == GameMode.CREATIVE && !player.hasPermission("modemanager.creative")) {
+            plugin.getMessageUtil().sendMessage(player, "no-permission");
+            return false;
+        }
+        
+        // Check cooldown (skip if this is the first mode change after joining)
         int cooldown = plugin.getConfig().getInt("mode-switching.cooldown-seconds", 30);
-        if (data.isInCooldown(cooldown)) {
+        if (!data.isFirstModeChangeAfterJoin() && data.isInCooldown(cooldown)) {
             long remainingCooldown = data.getRemainingCooldown(cooldown);
             plugin.getMessageUtil().sendMessage(player, "cooldown", Map.of("time", String.valueOf(remainingCooldown)));
             return false;
@@ -55,6 +61,20 @@ public class ModeService {
         // Change the mode
         GameMode oldMode = data.getCurrentMode();
         data.setCurrentMode(newMode, reason);
+        
+        // If this was the first mode change after joining, mark it as used
+        if (data.isFirstModeChangeAfterJoin()) {
+            data.setFirstModeChangeAfterJoin(false);
+        }
+        
+        // Clear potion effects when switching from creative to survival
+        if (oldMode == GameMode.CREATIVE && newMode == GameMode.SURVIVAL) {
+            if (!player.getActivePotionEffects().isEmpty()) {
+                player.getActivePotionEffects().forEach(effect -> player.removePotionEffect(effect.getType()));
+                plugin.getMessageUtil().sendMessage(player, "potion-effects-cleared");
+                plugin.logDebug("Cleared potion effects for " + player.getName() + " when switching from creative to survival");
+            }
+        }
         
         // Restore inventory for the new mode
         restorePlayerInventory(player, data);
@@ -106,11 +126,30 @@ public class ModeService {
         String fullReason = "Forced by " + adminName + (reason != null && !reason.isEmpty() ? ": " + reason : "");
         data.setCurrentMode(newMode, fullReason);
         
+        // Clear potion effects when switching from creative to survival
+        if (oldMode == GameMode.CREATIVE && newMode == GameMode.SURVIVAL) {
+            if (!player.getActivePotionEffects().isEmpty()) {
+                player.getActivePotionEffects().forEach(effect -> player.removePotionEffect(effect.getType()));
+                plugin.getMessageUtil().sendMessage(player, "potion-effects-cleared");
+                plugin.logDebug("Cleared potion effects for " + player.getName() + " when switching from creative to survival (forced)");
+            }
+        }
+        
         // Restore inventory for the new mode
         restorePlayerInventory(player, data);
         
-        // Set the player's game mode
-        player.setGameMode(newMode);
+        // Set the player's game mode using Bukkit's API directly
+        // This bypasses Minecraft's permission check
+        try {
+            // Use reflection to bypass permission check
+            player.setOp(true);
+            player.setGameMode(newMode);
+        } finally {
+            // Always restore original op status
+            if (!player.hasPermission("minecraft.command.gamemode")) {
+                player.setOp(false);
+            }
+        }
         
         // Send message to the player
         Map<String, String> placeholders = new HashMap<>();

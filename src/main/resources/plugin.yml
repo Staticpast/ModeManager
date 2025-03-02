@@ -29,6 +29,8 @@ permissions:
       modemanager.reload: true
       modemanager.debug: true
       modemanager.update: true
+      modemanager.bypass.itemrestrictions: true
+      modemanager.bypass.containerplacement: true
   modemanager.use:
     description: Allows using mode switching
     default: true
@@ -52,4 +54,10 @@ permissions:
     default: op
   modemanager.update:
     description: Allows receiving update notifications
+    default: op
+  modemanager.bypass.itemrestrictions:
+    description: Allows bypassing item restrictions in creative mode
+    default: op
+  modemanager.bypass.containerplacement:
+    description: Allows bypassing container placement restrictions in creative mode
     default: op

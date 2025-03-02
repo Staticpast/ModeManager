@@ -50,6 +50,60 @@ protection:
   
   # Prevent players from taking items from containers while in creative mode
   prevent-creative-container-taking: true
+  
+  # Prevent players from placing containers in creative mode
+  prevent-creative-container-blocks: true
+  
+  # Prevent players from spawning mobs in creative mode
+  prevent-creative-mob-spawning: true
+  
+  # Restricted entity types for mob spawning in creative mode
+  # These entities cannot be spawned in creative mode
+  # Set to "ALL" to restrict all entity types, or list specific types
+  # For a list of valid entity types, see: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/entity/EntityType.html
+  restricted-entity-types: "ALL"
+  # Example of specific entity types:
+  # restricted-entity-types:
+  #   - ZOMBIE
+  #   - SKELETON
+  #   - CREEPER
+  #   - VILLAGER
+  #   - COW
+  #   - PIG
+  
+  # Preserve creative inventory on death
+  preserve-creative-inventory-on-death: true
+  
+  # Restrict usage of specific items in creative mode
+  restrict-creative-items:
+    # Enable or disable item restrictions in creative mode
+    enabled: true
+    
+    # Bypass permission: modemanager.bypass.itemrestrictions
+    
+    # List of restricted items in creative mode
+    # Format: MATERIAL_NAME or MATERIAL_NAME:DATA_VALUE
+    # For a list of valid material names, see: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html
+    restricted-items:
+      - LAVA_BUCKET
+      - WATER_BUCKET
+      - BUCKET
+      - FLINT_AND_STEEL
+      - TNT
+      - TNT_MINECART
+      - SPAWNER
+      # Potions and related items
+      - SPLASH_POTION
+      - LINGERING_POTION
+      - TIPPED_ARROW
+      # Command blocks and structure blocks
+      - COMMAND_BLOCK
+      - CHAIN_COMMAND_BLOCK
+      - REPEATING_COMMAND_BLOCK
+      - COMMAND_BLOCK_MINECART
+      - STRUCTURE_BLOCK
+      - STRUCTURE_VOID
+      - JIGSAW
 
 # ======================================
 # Inventory Management
@@ -85,6 +139,67 @@ messages:
   creative-block-protected: "&7This block was placed in creative mode and cannot be broken in survival."
   creative-item-frame-protected: "&7This item was placed in an item frame in creative mode and cannot be removed in survival."
   creative-container-blocked: "&7You cannot interact with containers in creative mode."
+  creative-item-restricted: "&7You cannot use &e%item% &7in creative mode."
+  creative-container-placement-blocked: "&7You cannot place containers in creative mode."
+  creative-mob-spawning-blocked: "&7You cannot spawn mobs in creative mode."
+  creative-spawn-egg-blocked: "&7You cannot use &e%entity% Spawn Egg &7in creative mode."
+  inventory-restored: "&7Your &e%mode% &7inventory has been restored after death."
+  player-only: "&7This command can only be used by players."
+  player-not-found: "&7Player not found: &e%player%&7."
+  invalid-mode: "&7Invalid game mode: &e%mode%&7. Only SURVIVAL and CREATIVE are supported."
+  update-available: "&aA new update is available: &f%latest% &a(Current: &f%current%&a)"
+  update-download: "&aDownload it at: &f%url%"
+  potion-effects-cleared: "&7Your potion effects have been cleared when switching to survival mode."
+  
+  # Status command messages
+  status-header: "&6Mode Status"
+  status-current-mode: "&7Current mode: &e%mode%"
+  status-cooldown-active: "&7Cooldown: &f%time% &7seconds"
+  status-cooldown-ready: "&7Cooldown: &eReady"
+  status-recent-changes: "&7Recent mode changes:"
+  status-history-entry: "&7- %timestamp%: &e%mode% &7(%reason%)"
+  
+  # Admin command messages
+  admin-usage: "&7Usage: &f/mode admin [list|check <player>|force <player> <mode> [reason]]"
+  admin-check-usage: "&7Usage: &f/mode admin check <player>"
+  admin-force-usage: "&7Usage: &f/mode admin force <player> <mode> [reason]"
+  admin-unknown-command: "&7Unknown admin command. Use &f/mode admin [list|check <player>|force <player> <mode> [reason]]"
+  
+  admin-list-header: "&6Player Modes"
+  admin-list-entry: "&e%player%&7: &e%mode%"
+  
+  admin-check-header: "&6Mode History for %player%"
+  admin-check-current-mode: "&7Current mode: &e%mode%"
+  admin-check-cooldown-active: "&7Cooldown: &f%time% &7seconds"
+  admin-check-cooldown-ready: "&7Cooldown: &eReady"
+  admin-check-history: "&7Mode history:"
+  admin-check-history-entry: "&7- %timestamp%: &e%mode% &7(%reason%)"
+  
+  admin-force-success: "&7Forced &e%player% &7into &e%mode% &7mode."
+  admin-force-failed: "&7Failed to force &e%player% &7into &e%mode% &7mode."
+  
+  # Help command messages
+  help-header: "&6ModeManager Commands"
+  help-survival: "&f/mode survival &7- Switch to survival mode"
+  help-creative: "&f/mode creative &7- Switch to creative mode"
+  help-status: "&f/mode status &7- Check your current mode and statistics"
+  help-admin-list: "&f/mode admin list &7- List all players and their current modes"
+  help-admin-check: "&f/mode admin check <player> &7- Check a specific player's mode history"
+  help-admin-force: "&f/mode admin force <player> <mode> [reason] &7- Force a player into a specific mode"
+  
+  # Action bar messages configuration
+  # Set to true for messages that should appear in the action bar instead of chat
+  action-bar-messages:
+    creative-drop-blocked: true
+    creative-block-protected: true
+    creative-item-frame-protected: true
+    creative-container-blocked: true
+    creative-item-restricted: true
+    creative-container-placement-blocked: true
+    creative-mob-spawning-blocked: true
+    creative-spawn-egg-blocked: true
+    inventory-restored: true
+    potion-effects-cleared: true
 
 # ======================================
 # Update Checker Settings
