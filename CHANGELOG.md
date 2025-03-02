@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Updated README with accurate API documentation
+- Added SpigotMC resource ID (122976) to the config's update-checker section to enable automatic update notifications
 - Improved SpigotMC resource links in documentation
 
 ## [1.0.0] - 2024-07-01
@@ -25,4 +26,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prevention of item transfers between gamemodes
 - Protection of creative-built blocks from survival mining
 - Blocking of item dropping in creative mode
-- Admin tools to monitor and manage player mode usage 
+- Admin tools to monitor and manage player mode usage
