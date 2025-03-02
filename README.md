@@ -2,7 +2,9 @@
 
 A Minecraft Spigot plugin that allows players to switch between survival and creative modes while maintaining separate inventories and preventing cross-mode item transfers.
 
-[![SpigotMC](https://img.shields.io/badge/SpigotMC-ModeManager-orange)]()
+[![Java](https://img.shields.io/badge/Java-21-red.svg)](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.21.4-green.svg)](https://www.minecraft.net/)
+[![SpigotMC](https://img.shields.io/badge/SpigotMC-ModeManager-orange)](https://www.spigotmc.org/resources/)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/paypalme/mckenzio)
 
 ## Features
@@ -10,16 +12,13 @@ A Minecraft Spigot plugin that allows players to switch between survival and cre
 * 🔄 Seamless switching between survival and creative modes
 * 🎒 Separate inventories for each gamemode
 * 🛡️ Prevents item transfers between gamemodes
-* 🚫 Blocks dropping items in creative mode
 * 🏗️ Creative-built blocks are protected from survival mining
-* ⚙️ Configurable permissions for mode switching
-* 📢 Customizable messages for all plugin actions
-* 📋 Comprehensive logging of mode changes and transfer attempts
+* 🚫 Blocks dropping items in creative mode
 * 👮 Admin tools to monitor and manage player mode usage
 
 ## Installation
 
-1. Download the latest release from [Spigot]() or [GitHub Releases](https://github.com/McKenzieJDan/ModeManager/releases)
+1. Download the latest release from [Spigot](https://www.spigotmc.org/resources/) or [GitHub Releases](https://github.com/McKenzieJDan/ModeManager/releases)
 2. Place the JAR file in your server's `plugins` folder
 3. Restart your server
 4. Configure the plugin in the `config.yml` file
@@ -35,23 +34,31 @@ Players with appropriate permissions can switch modes using simple commands. The
 * `/mode status` - Check your current mode and statistics
 * `/mode admin list` - List all players and their current modes (admin only)
 * `/mode admin check <player>` - Check a specific player's mode history (admin only)
+* `/mode admin force <player> <mode> [reason]` - Force a player into a specific mode (admin only)
 
 ### Permissions
 
-* `modemanager.use` - Permission to use mode switching
-* `modemanager.creative` - Permission to access creative mode
-* `modemanager.admin` - Admin permissions for monitoring and management
-* `modemanager.admin.list` - Permission to list all players and their modes
-* `modemanager.admin.check` - Permission to check a player's mode history
-* `modemanager.reload` - Permission to reload the plugin configuration
-* `modemanager.debug` - Permission to toggle debug mode
-* `modemanager.update` - Permission to receive update notifications
+* `modemanager.use` - Permission to use mode switching (default: true)
+* `modemanager.creative` - Permission to access creative mode (default: op)
+* `modemanager.admin` - Admin permissions for monitoring and management (default: op)
+* `modemanager.admin.list` - Permission to list all players and their modes (default: op)
+* `modemanager.admin.check` - Permission to check a player's mode history (default: op)
+* `modemanager.admin.force` - Permission to force a player into a specific mode (default: op)
+* `modemanager.reload` - Permission to reload the plugin configuration (default: op)
+* `modemanager.debug` - Permission to toggle debug mode (default: op)
+* `modemanager.update` - Permission to receive update notifications (default: op)
+* `modemanager.bypass.itemrestrictions` - Bypass item restrictions in creative mode (default: op)
+* `modemanager.bypass.containerplacement` - Bypass container placement restrictions (default: op)
+* `modemanager.bypass.mobspawning` - Bypass mob spawning restrictions in creative mode (default: op)
 
 ## Configuration
 
 The plugin's configuration file (`config.yml`) is organized into logical sections:
 
 ```yaml
+# General settings
+enabled: true
+
 # Mode switching settings
 mode-switching:
   cooldown-seconds: 30
@@ -61,10 +68,24 @@ mode-switching:
 # Protection settings
 protection:
   track-creative-blocks: true
+  track-creative-item-frames: true
   prevent-creative-drops: true
   prevent-ender-chest-transfers: true
   prevent-creative-container-placement: true
   prevent-creative-container-taking: true
+  prevent-creative-container-blocks: true
+  prevent-creative-mob-spawning: true
+  
+  # Restricted items in creative mode
+  restrict-creative-items:
+    enabled: true
+    restricted-items:
+      - LAVA_BUCKET
+      - WATER_BUCKET
+      - BUCKET
+      - FLINT_AND_STEEL
+      - TNT
+      # And more...
   
 # Inventory management
 inventories:
@@ -108,17 +129,22 @@ if (provider != null) {
 ### Available API Methods
 
 * `isPluginEnabled()` - Check if the plugin is enabled
+* `registerEvents(Plugin, Listener)` - Register a listener for plugin events
 * `getPlayerMode(Player)` - Get a player's current mode
+* `getPlayerMode(UUID)` - Get a player's current mode by UUID
 * `changePlayerMode(Player, GameMode, String)` - Change a player's mode
 * `isPlayerInCooldown(Player)` - Check if a player is in cooldown
 * `getPlayerRemainingCooldown(Player)` - Get a player's remaining cooldown time
 * `isCreativeBlock(Location)` - Check if a block was placed in creative mode
 * `getCreativeBlockPlacer(Location)` - Get who placed a creative block
+* `isCreativeItemFrame(ItemFrame)` - Check if an item frame was placed in creative mode
+* `getCreativeItemFramePlacer(ItemFrame)` - Get who placed an item in an item frame in creative mode
 * `getPlayerModeHistory(Player)` - Get a player's mode history
+
 
 ## Requirements
 
-- Spigot/Paper 1.21.4
+- Spigot/Paper 1.21.4+
 - Java 21+
 
 ## Support
