@@ -1,6 +1,6 @@
-package io.mckenz.template.listeners;
+package io.mckenz.modemanager.listeners;
 
-import io.mckenz.template.PluginTemplate;
+import io.mckenz.modemanager.ModeManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -12,14 +12,14 @@ import org.bukkit.event.player.PlayerJoinEvent;
  */
 public class PlayerJoinListener implements Listener {
     
-    private final PluginTemplate plugin;
+    private final ModeManager plugin;
     
     /**
      * Constructor for the player join listener
      * 
      * @param plugin Reference to the main plugin instance
      */
-    public PlayerJoinListener(PluginTemplate plugin) {
+    public PlayerJoinListener(ModeManager plugin) {
         this.plugin = plugin;
     }
     

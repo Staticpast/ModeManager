@@ -1,6 +1,6 @@
-package io.mckenz.template.commands;
+package io.mckenz.modemanager.commands;
 
-import io.mckenz.template.PluginTemplate;
+import io.mckenz.modemanager.ModeManager;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  */
 public class PluginCommand implements CommandExecutor, TabCompleter {
     
-    private final PluginTemplate plugin;
+    private final ModeManager plugin;
     private final List<String> subcommands = Arrays.asList("status", "toggle", "reload", "debug");
     
     /**
@@ -26,13 +26,13 @@ public class PluginCommand implements CommandExecutor, TabCompleter {
      * 
      * @param plugin Reference to the main plugin instance
      */
-    public PluginCommand(PluginTemplate plugin) {
+    public PluginCommand(ModeManager plugin) {
         this.plugin = plugin;
     }
     
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!command.getName().equalsIgnoreCase("plugintemplate")) {
+        if (!command.getName().equalsIgnoreCase("modemanager")) {
             return false;
         }
 
@@ -63,7 +63,7 @@ public class PluginCommand implements CommandExecutor, TabCompleter {
                 return handleReloadCommand(sender);
                 
             default:
-                sender.sendMessage(ChatColor.RED + "Unknown subcommand. Use /plugintemplate for help.");
+                sender.sendMessage(ChatColor.RED + "Unknown subcommand. Use /modemanager for help.");
                 return true;
         }
     }
@@ -88,11 +88,11 @@ public class PluginCommand implements CommandExecutor, TabCompleter {
      * @return True if the sender has permission, false otherwise
      */
     private boolean hasPermission(CommandSender sender, String subCommand) {
-        if (sender.hasPermission("plugintemplate.admin")) {
+        if (sender.hasPermission("modemanager.admin")) {
             return true;
         }
         
-        return sender.hasPermission("plugintemplate." + subCommand);
+        return sender.hasPermission("modemanager." + subCommand);
     }
     
     /**
@@ -101,22 +101,22 @@ public class PluginCommand implements CommandExecutor, TabCompleter {
      * @param sender The command sender
      */
     private void showHelp(CommandSender sender) {
-        sender.sendMessage(ChatColor.GOLD + "PluginTemplate Commands:");
+        sender.sendMessage(ChatColor.GOLD + "ModeManager Commands:");
         
         if (hasPermission(sender, "status")) {
-            sender.sendMessage(ChatColor.YELLOW + "/plugintemplate status " + ChatColor.WHITE + "- Show current settings");
+            sender.sendMessage(ChatColor.YELLOW + "/modemanager status " + ChatColor.WHITE + "- Show current settings");
         }
         
         if (hasPermission(sender, "toggle")) {
-            sender.sendMessage(ChatColor.YELLOW + "/plugintemplate toggle " + ChatColor.WHITE + "- Enable/disable plugin");
+            sender.sendMessage(ChatColor.YELLOW + "/modemanager toggle " + ChatColor.WHITE + "- Enable/disable plugin");
         }
         
         if (hasPermission(sender, "reload")) {
-            sender.sendMessage(ChatColor.YELLOW + "/plugintemplate reload " + ChatColor.WHITE + "- Reload configuration");
+            sender.sendMessage(ChatColor.YELLOW + "/modemanager reload " + ChatColor.WHITE + "- Reload configuration");
         }
         
         if (hasPermission(sender, "debug")) {
-            sender.sendMessage(ChatColor.YELLOW + "/plugintemplate debug " + ChatColor.WHITE + "- Toggle debug mode");
+            sender.sendMessage(ChatColor.YELLOW + "/modemanager debug " + ChatColor.WHITE + "- Toggle debug mode");
         }
     }
     
@@ -127,7 +127,7 @@ public class PluginCommand implements CommandExecutor, TabCompleter {
      * @return True if the command was handled successfully
      */
     private boolean handleStatusCommand(CommandSender sender) {
-        sender.sendMessage(ChatColor.GOLD + "PluginTemplate Status:");
+        sender.sendMessage(ChatColor.GOLD + "ModeManager Status:");
         sender.sendMessage(ChatColor.YELLOW + "Plugin enabled: " + 
             (plugin.isPluginFunctionalityEnabled() ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No"));
         sender.sendMessage(ChatColor.YELLOW + "Debug mode: " + 
@@ -148,7 +148,7 @@ public class PluginCommand implements CommandExecutor, TabCompleter {
         boolean newState = !plugin.isPluginFunctionalityEnabled();
         plugin.setPluginFunctionalityEnabled(newState);
         
-        sender.sendMessage(ChatColor.YELLOW + "PluginTemplate is now " + 
+        sender.sendMessage(ChatColor.YELLOW + "ModeManager is now " + 
             (newState ? ChatColor.GREEN + "enabled" : ChatColor.RED + "disabled"));
         
         return true;

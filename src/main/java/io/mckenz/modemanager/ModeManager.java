@@ -1,9 +1,9 @@
-package io.mckenz.template;
+package io.mckenz.modemanager;
 
-import io.mckenz.template.api.PluginAPI;
-import io.mckenz.template.commands.PluginCommand;
-import io.mckenz.template.listeners.PlayerJoinListener;
-import io.mckenz.template.util.UpdateChecker;
+import io.mckenz.modemanager.api.PluginAPI;
+import io.mckenz.modemanager.commands.PluginCommand;
+import io.mckenz.modemanager.listeners.PlayerJoinListener;
+import io.mckenz.modemanager.util.UpdateChecker;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
@@ -13,7 +13,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * Main class for the plugin
  */
-public class PluginTemplate extends JavaPlugin implements PluginAPI {
+public class ModeManager extends JavaPlugin implements PluginAPI {
     private FileConfiguration config;
     private boolean enabled;
     private boolean debug;
@@ -30,8 +30,8 @@ public class PluginTemplate extends JavaPlugin implements PluginAPI {
         
         // Register commands
         PluginCommand commandExecutor = new PluginCommand(this);
-        getCommand("plugintemplate").setExecutor(commandExecutor);
-        getCommand("plugintemplate").setTabCompleter(commandExecutor);
+        getCommand("modemanager").setExecutor(commandExecutor);
+        getCommand("modemanager").setTabCompleter(commandExecutor);
         
         // Register API
         getServer().getServicesManager().register(
@@ -51,7 +51,7 @@ public class PluginTemplate extends JavaPlugin implements PluginAPI {
             logDebug("Update checker initialized with resource ID: " + resourceId);
         }
         
-        getLogger().info("PluginTemplate has been enabled!");
+        getLogger().info("ModeManager has been enabled!");
         logDebug("Debug mode is enabled");
     }
 
@@ -82,7 +82,7 @@ public class PluginTemplate extends JavaPlugin implements PluginAPI {
 
     @Override
     public void onDisable() {
-        getLogger().info("PluginTemplate has been disabled!");
+        getLogger().info("ModeManager has been disabled!");
     }
 
     // API Methods

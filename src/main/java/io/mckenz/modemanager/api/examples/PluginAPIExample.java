@@ -1,6 +1,6 @@
-package io.mckenz.template.api.examples;
+package io.mckenz.modemanager.api.examples;
 
-import io.mckenz.template.api.PluginAPI;
+import io.mckenz.modemanager.api.PluginAPI;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -21,7 +21,7 @@ public class PluginAPIExample {
             plugin.getServer().getServicesManager().getRegistration(PluginAPI.class);
             
         if (provider == null) {
-            plugin.getLogger().warning("PluginTemplate API not found!");
+            plugin.getLogger().warning("ModeManager API not found!");
             return false;
         }
         
@@ -29,7 +29,7 @@ public class PluginAPIExample {
         
         // Check if the plugin is enabled
         if (!api.isPluginEnabled()) {
-            plugin.getLogger().info("PluginTemplate is currently disabled.");
+            plugin.getLogger().info("ModeManager is currently disabled.");
             return false;
         }
         

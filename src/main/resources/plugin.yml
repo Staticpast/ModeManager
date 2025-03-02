@@ -1,43 +1,43 @@
-name: PluginTemplate
+name: ModeManager
 version: '${project.version}'
-main: io.mckenz.template.PluginTemplate
+main: io.mckenz.modemanager.ModeManager
 api-version: '1.21'
 description: A template for Minecraft plugins
 
 # TODO: Replace with your plugin commands
 commands:
-  plugintemplate:
-    description: Main command for PluginTemplate plugin
+  modemanager:
+    description: Main command for ModeManager plugin
     usage: |
       /<command> status - Shows plugin status
       /<command> toggle - Enable/disable the plugin
       /<command> reload - Reload the configuration
       /<command> debug - Toggle debug mode
-    aliases: [pt]
+    aliases: [mm]
 
 # TODO: Replace with your plugin permissions
 permissions:
-  plugintemplate.admin:
-    description: Gives access to all PluginTemplate commands
+  modemanager.admin:
+    description: Gives access to all ModeManager commands
     default: op
     children:
-      plugintemplate.status: true
-      plugintemplate.toggle: true
-      plugintemplate.reload: true
-      plugintemplate.debug: true
-      plugintemplate.update: true
-  plugintemplate.status:
+      modemanager.status: true
+      modemanager.toggle: true
+      modemanager.reload: true
+      modemanager.debug: true
+      modemanager.update: true
+  modemanager.status:
     description: Allows checking the plugin status
     default: op
-  plugintemplate.toggle:
+  modemanager.toggle:
     description: Allows enabling/disabling the plugin
     default: op
-  plugintemplate.reload:
+  modemanager.reload:
     description: Allows reloading the plugin configuration
     default: op
-  plugintemplate.debug:
+  modemanager.debug:
     description: Allows toggling debug mode
     default: op
-  plugintemplate.update:
+  modemanager.update:
     description: Allows receiving update notifications
     default: op

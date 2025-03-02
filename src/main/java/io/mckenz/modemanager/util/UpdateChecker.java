@@ -1,6 +1,6 @@
-package io.mckenz.template.util;
+package io.mckenz.modemanager.util;
 
-import io.mckenz.template.PluginTemplate;
+import io.mckenz.modemanager.ModeManager;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -21,7 +21,7 @@ import java.net.URISyntaxException;
  */
 public class UpdateChecker implements Listener {
 
-    private final PluginTemplate plugin;
+    private final ModeManager plugin;
     private final int resourceId;
     private String latestVersion;
     private boolean updateAvailable = false;
@@ -33,7 +33,7 @@ public class UpdateChecker implements Listener {
      * @param resourceId The SpigotMC resource ID
      * @param notifyAdmins Whether to notify admins when they join
      */
-    public UpdateChecker(PluginTemplate plugin, int resourceId, boolean notifyAdmins) {
+    public UpdateChecker(ModeManager plugin, int resourceId, boolean notifyAdmins) {
         this.plugin = plugin;
         this.resourceId = resourceId;
         this.notifyAdmins = notifyAdmins;
@@ -124,12 +124,12 @@ public class UpdateChecker implements Listener {
         Player player = event.getPlayer();
         
         // Only notify players with permission if notifications are enabled
-        if (updateAvailable && notifyAdmins && player.hasPermission("plugintemplate.update")) {
+        if (updateAvailable && notifyAdmins && player.hasPermission("modemanager.update")) {
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                player.sendMessage(ChatColor.GREEN + "[PluginTemplate] " + ChatColor.YELLOW + "A new update is available: " + 
+                player.sendMessage(ChatColor.GREEN + "[ModeManager] " + ChatColor.YELLOW + "A new update is available: " + 
                                   ChatColor.WHITE + latestVersion + ChatColor.YELLOW + " (Current: " + 
                                   ChatColor.WHITE + plugin.getDescription().getVersion() + ChatColor.YELLOW + ")");
-                player.sendMessage(ChatColor.GREEN + "[PluginTemplate] " + ChatColor.YELLOW + "Download it at: " + 
+                player.sendMessage(ChatColor.GREEN + "[ModeManager] " + ChatColor.YELLOW + "Download it at: " + 
                                   ChatColor.WHITE + "https://www.spigotmc.org/resources/" + resourceId);
             }, 40L); // Delay for 2 seconds after join
         }

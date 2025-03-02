@@ -1,4 +1,4 @@
-package io.mckenz.template.api;
+package io.mckenz.modemanager.api;
 
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
