@@ -4,15 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- TODO: Change these values to match your plugin -->
     <groupId>io.mckenz</groupId>
-    <artifactId>PluginTemplate</artifactId>
+    <artifactId>ModeManager</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>PluginTemplate</name>
-    <description>A template for Minecraft plugins</description>
-    <url>https://github.com/McKenzieJDan/pluginname</url>
+    <name>ModeManager</name>
+    <description>A plugin that allows players to switch between survival and creative modes while maintaining separate inventories.</description>
+    <url>https://github.com/McKenzieJDan/ModeManager</url>
 
     <properties>
         <java.version>21</java.version>

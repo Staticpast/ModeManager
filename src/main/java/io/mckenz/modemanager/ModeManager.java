@@ -1,41 +1,71 @@
 package io.mckenz.modemanager;
 
-import io.mckenz.modemanager.api.PluginAPI;
-import io.mckenz.modemanager.commands.PluginCommand;
-import io.mckenz.modemanager.listeners.PlayerJoinListener;
+import io.mckenz.modemanager.api.ModeManagerAPI;
+import io.mckenz.modemanager.commands.ModeCommand;
+import io.mckenz.modemanager.data.CreativeBlockManager;
+import io.mckenz.modemanager.data.CreativeItemFrameManager;
+import io.mckenz.modemanager.data.ModeChangeRecord;
+import io.mckenz.modemanager.data.PlayerDataManager;
+import io.mckenz.modemanager.data.PlayerModeData;
+import io.mckenz.modemanager.listeners.BlockListener;
+import io.mckenz.modemanager.listeners.EntityListener;
+import io.mckenz.modemanager.listeners.PlayerListener;
+import io.mckenz.modemanager.services.ModeService;
+import io.mckenz.modemanager.util.MessageUtil;
 import io.mckenz.modemanager.util.UpdateChecker;
 
+import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
- * Main class for the plugin
+ * Main class for the ModeManager plugin
  */
-public class ModeManager extends JavaPlugin implements PluginAPI {
+public class ModeManager extends JavaPlugin implements ModeManagerAPI {
     private FileConfiguration config;
     private boolean enabled;
     private boolean debug;
     private UpdateChecker updateChecker;
-
+    private PlayerDataManager playerDataManager;
+    private CreativeBlockManager creativeBlockManager;
+    private CreativeItemFrameManager creativeItemFrameManager;
+    private ModeService modeService;
+    private MessageUtil messageUtil;
+    
     @Override
     public void onEnable() {
         // Save default config if it doesn't exist
         saveDefaultConfig();
         loadConfig();
         
+        // Initialize managers and services
+        playerDataManager = new PlayerDataManager(this);
+        creativeBlockManager = new CreativeBlockManager(getDataFolder(), getLogger());
+        creativeItemFrameManager = new CreativeItemFrameManager(getDataFolder(), getLogger());
+        modeService = new ModeService(this);
+        messageUtil = new MessageUtil(this);
+        
         // Register events
-        getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+        getServer().getPluginManager().registerEvents(new BlockListener(this), this);
+        getServer().getPluginManager().registerEvents(new EntityListener(this), this);
         
         // Register commands
-        PluginCommand commandExecutor = new PluginCommand(this);
-        getCommand("modemanager").setExecutor(commandExecutor);
-        getCommand("modemanager").setTabCompleter(commandExecutor);
+        ModeCommand commandExecutor = new ModeCommand(this, modeService);
+        getCommand("mode").setExecutor(commandExecutor);
+        getCommand("mode").setTabCompleter(commandExecutor);
         
         // Register API
         getServer().getServicesManager().register(
-            PluginAPI.class, 
+            ModeManagerAPI.class, 
             this, 
             this, 
             org.bukkit.plugin.ServicePriority.Normal
@@ -64,8 +94,6 @@ public class ModeManager extends JavaPlugin implements PluginAPI {
         enabled = config.getBoolean("enabled", true);
         debug = config.getBoolean("debug", false);
         
-        // TODO: Load your plugin's specific configuration here
-        
         logDebug("Configuration loaded");
     }
 
@@ -82,6 +110,21 @@ public class ModeManager extends JavaPlugin implements PluginAPI {
 
     @Override
     public void onDisable() {
+        // Save all player data
+        if (playerDataManager != null) {
+            playerDataManager.saveAllPlayerData();
+        }
+        
+        // Save creative blocks
+        if (creativeBlockManager != null) {
+            creativeBlockManager.saveBlocks();
+        }
+        
+        // Save creative item frames
+        if (creativeItemFrameManager != null) {
+            creativeItemFrameManager.saveItemFrames();
+        }
+        
         getLogger().info("ModeManager has been disabled!");
     }
 
@@ -95,6 +138,62 @@ public class ModeManager extends JavaPlugin implements PluginAPI {
     @Override
     public void registerEvents(Plugin plugin, Listener listener) {
         getServer().getPluginManager().registerEvents(listener, plugin);
+    }
+    
+    @Override
+    public GameMode getPlayerMode(Player player) {
+        return getPlayerMode(player.getUniqueId());
+    }
+    
+    @Override
+    public GameMode getPlayerMode(UUID playerUuid) {
+        PlayerModeData data = playerDataManager.getPlayerData(playerUuid);
+        return data != null ? data.getCurrentMode() : null;
+    }
+    
+    @Override
+    public boolean changePlayerMode(Player player, GameMode newMode, String reason) {
+        return modeService.changePlayerMode(player, newMode, reason);
+    }
+    
+    @Override
+    public boolean isPlayerInCooldown(Player player) {
+        PlayerModeData data = playerDataManager.getPlayerData(player);
+        int cooldown = config.getInt("mode-switching.cooldown-seconds", 30);
+        return data != null && data.isInCooldown(cooldown);
+    }
+    
+    @Override
+    public long getPlayerRemainingCooldown(Player player) {
+        PlayerModeData data = playerDataManager.getPlayerData(player);
+        int cooldown = config.getInt("mode-switching.cooldown-seconds", 30);
+        return data != null ? data.getRemainingCooldown(cooldown) : 0;
+    }
+    
+    @Override
+    public boolean isCreativeBlock(Location location) {
+        return creativeBlockManager.isCreativeBlock(location);
+    }
+    
+    @Override
+    public UUID getCreativeBlockPlacer(Location location) {
+        return creativeBlockManager.getBlockPlacer(location);
+    }
+    
+    @Override
+    public boolean isCreativeItemFrame(ItemFrame itemFrame) {
+        return creativeItemFrameManager.isCreativeItemFrame(itemFrame);
+    }
+    
+    @Override
+    public UUID getCreativeItemFramePlacer(ItemFrame itemFrame) {
+        return creativeItemFrameManager.getItemFramePlacer(itemFrame);
+    }
+    
+    @Override
+    public List<ModeChangeRecord> getPlayerModeHistory(Player player) {
+        PlayerModeData data = playerDataManager.getPlayerData(player);
+        return data != null ? data.getModeHistory() : List.of();
     }
     
     /**
@@ -144,5 +243,50 @@ public class ModeManager extends JavaPlugin implements PluginAPI {
      */
     public UpdateChecker getUpdateChecker() {
         return updateChecker;
+    }
+    
+    /**
+     * Gets the player data manager
+     * 
+     * @return The player data manager
+     */
+    public PlayerDataManager getPlayerDataManager() {
+        return playerDataManager;
+    }
+    
+    /**
+     * Gets the creative block manager
+     * 
+     * @return The creative block manager
+     */
+    public CreativeBlockManager getCreativeBlockManager() {
+        return creativeBlockManager;
+    }
+    
+    /**
+     * Gets the creative item frame manager
+     * 
+     * @return The creative item frame manager
+     */
+    public CreativeItemFrameManager getCreativeItemFrameManager() {
+        return creativeItemFrameManager;
+    }
+    
+    /**
+     * Gets the mode service
+     * 
+     * @return The mode service
+     */
+    public ModeService getModeService() {
+        return modeService;
+    }
+    
+    /**
+     * Gets the message utility
+     * 
+     * @return The message utility
+     */
+    public MessageUtil getMessageUtil() {
+        return messageUtil;
     }
 }

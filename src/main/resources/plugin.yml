@@ -2,35 +2,47 @@ name: ModeManager
 version: '${project.version}'
 main: io.mckenz.modemanager.ModeManager
 api-version: '1.21'
-description: A template for Minecraft plugins
+description: A plugin that allows players to switch between survival and creative modes while maintaining separate inventories.
 
-# TODO: Replace with your plugin commands
 commands:
-  modemanager:
+  mode:
     description: Main command for ModeManager plugin
     usage: |
-      /<command> status - Shows plugin status
-      /<command> toggle - Enable/disable the plugin
-      /<command> reload - Reload the configuration
-      /<command> debug - Toggle debug mode
+      /<command> survival - Switch to survival mode
+      /<command> creative - Switch to creative mode
+      /<command> status - Check your current mode and statistics
+      /<command> admin list - List all players and their current modes
+      /<command> admin check <player> - Check a specific player's mode history
+      /<command> admin force <player> <mode> [reason] - Force a player into a specific mode
     aliases: [mm]
 
-# TODO: Replace with your plugin permissions
 permissions:
   modemanager.admin:
-    description: Gives access to all ModeManager commands
+    description: Gives access to all ModeManager admin commands
     default: op
     children:
-      modemanager.status: true
-      modemanager.toggle: true
+      modemanager.use: true
+      modemanager.creative: true
+      modemanager.admin.list: true
+      modemanager.admin.check: true
+      modemanager.admin.force: true
       modemanager.reload: true
       modemanager.debug: true
       modemanager.update: true
-  modemanager.status:
-    description: Allows checking the plugin status
+  modemanager.use:
+    description: Allows using mode switching
+    default: true
+  modemanager.creative:
+    description: Allows access to creative mode
     default: op
-  modemanager.toggle:
-    description: Allows enabling/disabling the plugin
+  modemanager.admin.list:
+    description: Allows listing all players and their current modes
+    default: op
+  modemanager.admin.check:
+    description: Allows checking a specific player's mode history
+    default: op
+  modemanager.admin.force:
+    description: Allows forcing a player into a specific mode
     default: op
   modemanager.reload:
     description: Allows reloading the plugin configuration

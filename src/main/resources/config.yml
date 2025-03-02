@@ -1,11 +1,10 @@
 # ======================================
-# PluginTemplate Configuration
+# ModeManager Configuration
 # ======================================
 # Plugin Version: ${project.version}
 # 
-# TODO: Update with your plugin description
-# This configuration file controls all aspects of the plugin.
-# For support or questions, visit: https://github.com/McKenzieJDan/pluginname
+# This configuration file controls all aspects of the ModeManager plugin.
+# For support or questions, visit: https://github.com/McKenzieJDan/ModeManager
 
 # ======================================
 # General Settings
@@ -15,21 +14,86 @@
 enabled: true
 
 # ======================================
-# Plugin Specific Settings
+# Mode Switching Settings
 # ======================================
 
-# TODO: Add your plugin's specific settings here
+mode-switching:
+  # Cooldown between mode switches (in seconds)
+  cooldown-seconds: 30
+  
+  # Broadcast mode changes to all players
+  broadcast-changes: false
+  
+  # Default mode to use when a player joins for the first time
+  # Options: SURVIVAL, CREATIVE
+  default-mode: SURVIVAL
+
+# ======================================
+# Protection Settings
+# ======================================
+
+protection:
+  # Track blocks placed in creative mode to prevent mining them in survival
+  track-creative-blocks: true
+  
+  # Track items placed in item frames in creative mode to prevent removing them in survival
+  track-creative-item-frames: true
+  
+  # Prevent players from dropping items while in creative mode
+  prevent-creative-drops: true
+  
+  # Prevent transferring items between modes via ender chests
+  prevent-ender-chest-transfers: true
+  
+  # Prevent players from placing items in containers while in creative mode
+  prevent-creative-container-placement: true
+  
+  # Prevent players from taking items from containers while in creative mode
+  prevent-creative-container-taking: true
+
+# ======================================
+# Inventory Management
+# ======================================
+
+inventories:
+  # Save and restore armor contents when switching modes
+  save-armor-contents: true
+  
+  # Save and restore offhand items when switching modes
+  save-offhand-items: true
+  
+  # Use separate ender chest inventories for each mode
+  separate-ender-chest: true
+  
+  # Clear inventory when switching to creative mode
+  # This is a safety feature to prevent item duplication
+  clear-on-creative: true
+
+# ======================================
+# Messages
+# ======================================
+
+messages:
+  prefix: "&8[&eModeManager&8] "
+  mode-changed: "&7Your gamemode has been changed to &e%mode%&7."
+  mode-forced: "&7Your gamemode has been forced to &e%mode% &7by &e%admin%&7."
+  mode-changed-broadcast: "&e%player% &7changed from &e%old_mode% &7to &e%mode%&7."
+  already-in-mode: "&7You are already in &e%mode% &7mode."
+  cooldown: "&7You must wait &f%time% &7seconds before changing modes again."
+  no-permission: "&7You don't have permission to use this command."
+  creative-drop-blocked: "&7You cannot drop items in creative mode."
+  creative-block-protected: "&7This block was placed in creative mode and cannot be broken in survival."
+  creative-item-frame-protected: "&7This item was placed in an item frame in creative mode and cannot be removed in survival."
+  creative-container-blocked: "&7You cannot interact with containers in creative mode."
 
 # ======================================
 # Update Checker Settings
 # ======================================
 
-# Enable the update checker
 update-checker:
   # Enable or disable the update checker
   enabled: true
   
-  # TODO: Update with your SpigotMC resource ID
   # The SpigotMC resource ID for the plugin
   resource-id: 0
   
