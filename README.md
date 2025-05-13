@@ -147,6 +147,11 @@ if (provider != null) {
 - Spigot/Paper 1.21.5+
 - Java 21+
 
+## Used By
+
+- [SuegoFaults](https://suegofaults.com) - A curated adult Minecraft community where ModeManager ensures creative freedom and survival integrity stay perfectly balanced.
+
+
 ## Support
 
 If you find this plugin helpful, consider [buying me a coffee](https://www.paypal.com/paypalme/mckenzio) ☕
