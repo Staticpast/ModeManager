@@ -149,7 +149,7 @@ if (provider != null) {
 
 ## Used By
 
-- [SuegoFaults](https://suegofaults.com) - A curated adult Minecraft community where ModeManager ensures creative freedom and survival integrity stay perfectly balanced.
+[SuegoFaults](https://suegofaults.com) - A curated adult Minecraft community where ModeManager ensures creative freedom and survival integrity stay perfectly balanced.
 
 
 ## Support
