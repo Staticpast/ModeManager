@@ -3,7 +3,7 @@
 A Minecraft Spigot plugin that allows players to switch between survival and creative modes while maintaining separate inventories and preventing cross-mode item transfers.
 
 [![Java](https://img.shields.io/badge/Java-21-red.svg)](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.21.5-green.svg)](https://www.minecraft.net/)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.21.6-green.svg)](https://www.minecraft.net/)
 [![SpigotMC](https://img.shields.io/badge/SpigotMC-ModeManager-orange)](https://www.spigotmc.org/resources/modemanager.122976/)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/paypalme/mckenzio)
 
@@ -144,7 +144,7 @@ if (provider != null) {
 
 ## Requirements
 
-- Spigot/Paper 1.21.5+
+- Spigot/Paper 1.21.6+
 - Java 21+
 
 ## Used By
