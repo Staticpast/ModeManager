@@ -1,14 +1,26 @@
-# Maven build directory
-target/
-
-# IDE files
+# IntelliJ-related files
 .idea/
 *.iml
-.vscode/
-.settings/
-.classpath
+*.ipr
+*.iws
 .project
-.cursorrules
+.classpath
+.settings/
+
+# Maven-related files
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Log files
+*.log
+logs/
+
+# Test server files
+test-server/
 
 # Compiled files
 *.class
@@ -22,14 +34,15 @@ target/
 *.tar.gz
 *.rar
 
-# Logs
-*.log
-
-# OS-specific files
+# macOS-specific files
 .DS_Store
-Thumbs.db
 
-# Build script cache files
+# Cache files
 .last_build_version
 .last_build_hash
-.release_notes_temp 
+.release_notes_temp
+
+# Other common ignored files
+.vscode/
+.metadata/
+.history/
