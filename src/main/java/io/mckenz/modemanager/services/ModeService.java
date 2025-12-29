@@ -139,17 +139,7 @@ public class ModeService {
         restorePlayerInventory(player, data);
         
         // Set the player's game mode using Bukkit's API directly
-        // This bypasses Minecraft's permission check
-        try {
-            // Use reflection to bypass permission check
-            player.setOp(true);
-            player.setGameMode(newMode);
-        } finally {
-            // Always restore original op status
-            if (!player.hasPermission("minecraft.command.gamemode")) {
-                player.setOp(false);
-            }
-        }
+        player.setGameMode(newMode);
         
         // Send message to the player
         Map<String, String> placeholders = new HashMap<>();
