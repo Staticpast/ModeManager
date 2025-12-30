@@ -3,22 +3,30 @@ package io.mckenz.modemanager.listeners;
 import io.mckenz.modemanager.ModeManager;
 import io.mckenz.modemanager.data.PlayerModeData;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Container;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -28,6 +36,7 @@ public class PlayerListener implements Listener {
     
     private final ModeManager plugin;
     private final Map<UUID, GameMode> deathModes = new HashMap<>();
+    private final Set<Material> containerMaterials;
     
     /**
      * Constructor for PlayerListener
@@ -36,6 +45,65 @@ public class PlayerListener implements Listener {
      */
     public PlayerListener(ModeManager plugin) {
         this.plugin = plugin;
+        this.containerMaterials = initContainerMaterials();
+    }
+    
+    /**
+     * Initialize the set of container materials
+     * 
+     * @return Set of container materials
+     */
+    private Set<Material> initContainerMaterials() {
+        Set<Material> containers = new HashSet<>();
+        
+        // Add all chest types
+        containers.add(Material.CHEST);
+        containers.add(Material.TRAPPED_CHEST);
+        containers.add(Material.ENDER_CHEST);
+        containers.add(Material.BARREL);
+        
+        // Add all shulker box types
+        for (Material material : Material.values()) {
+            if (material.name().endsWith("SHULKER_BOX")) {
+                containers.add(material);
+            }
+        }
+        
+        // Add furnace types
+        containers.add(Material.FURNACE);
+        containers.add(Material.BLAST_FURNACE);
+        containers.add(Material.SMOKER);
+        
+        // Add other container types
+        containers.add(Material.DISPENSER);
+        containers.add(Material.DROPPER);
+        containers.add(Material.HOPPER);
+        containers.add(Material.BREWING_STAND);
+        
+        // Add additional container types
+        containers.add(Material.LECTERN);
+        containers.add(Material.COMPOSTER);
+        containers.add(Material.CAULDRON);
+        containers.add(Material.LAVA_CAULDRON);
+        containers.add(Material.WATER_CAULDRON);
+        containers.add(Material.POWDER_SNOW_CAULDRON);
+        containers.add(Material.BEEHIVE);
+        containers.add(Material.BEE_NEST);
+        containers.add(Material.CAMPFIRE);
+        containers.add(Material.SOUL_CAMPFIRE);
+        containers.add(Material.JUKEBOX);
+        
+        return containers;
+    }
+    
+    /**
+     * Check if a material is a container
+     * 
+     * @param material The material to check
+     * @return True if the material is a container, false otherwise
+     */
+    private boolean isContainer(Material material) {
+        return containerMaterials.contains(material);
     }
     
     /**
@@ -238,52 +306,83 @@ public class PlayerListener implements Listener {
     }
     
     /**
-     * Handle inventory click events
+     * Handle player interact entity events
+     * This blocks creative players from placing/removing items in item frames
      * 
-     * @param event The inventory click event
+     * @param event The player interact entity event
      */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) {
-            return;
-        }
-        
-        Player player = (Player) event.getWhoClicked();
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+        Player player = event.getPlayer();
         
         // Skip if the player is not in creative mode
         if (player.getGameMode() != GameMode.CREATIVE) {
             return;
         }
         
-        // Prevent placing items in containers in creative mode if configured
-        if (event.getClickedInventory() != null && 
-            event.getClickedInventory().getType() != InventoryType.PLAYER && 
-            event.getClickedInventory().getType() != InventoryType.CREATIVE && 
-            plugin.getConfig().getBoolean("protection.prevent-creative-container-placement", true)) {
-            
-            event.setCancelled(true);
-            plugin.getMessageUtil().sendMessage(player, "creative-container-blocked");
-            plugin.logDebug("Prevented " + player.getName() + " from placing items in a container in creative mode");
+        // Skip if the player has bypass permission
+        if (player.hasPermission("modemanager.bypass.containerinteraction")) {
+            return;
         }
         
-        // Prevent taking items from containers in creative mode if configured
-        if (event.getClickedInventory() != null && 
-            event.getClickedInventory().getType() != InventoryType.PLAYER && 
-            event.getClickedInventory().getType() != InventoryType.CREATIVE && 
-            plugin.getConfig().getBoolean("protection.prevent-creative-container-taking", true)) {
-            
-            event.setCancelled(true);
-            plugin.getMessageUtil().sendMessage(player, "creative-container-blocked");
-            plugin.logDebug("Prevented " + player.getName() + " from taking items from a container in creative mode");
+        // Check if the entity is an item frame
+        if (!(event.getRightClicked() instanceof ItemFrame)) {
+            return;
         }
         
-        // Special handling for ender chest if separate inventories are enabled
-        if (event.getClickedInventory() != null && 
-            event.getClickedInventory().getType() == InventoryType.ENDER_CHEST && 
-            plugin.getConfig().getBoolean("inventories.separate-ender-chest", true)) {
-            
-            // No need to cancel, as we've already set up separate ender chest inventories
-            plugin.logDebug(player.getName() + " accessed their creative mode ender chest");
+        // Check if the config option is enabled
+        if (!plugin.getConfig().getBoolean("protection.prevent-creative-container-interaction", true)) {
+            return;
+        }
+        
+        // Block interaction with item frames
+        event.setCancelled(true);
+        plugin.getMessageUtil().sendMessage(player, "creative-container-blocked");
+        plugin.logDebug("Prevented " + player.getName() + " from interacting with item frame in creative mode");
+    }
+    
+    /**
+     * Handle player interact events
+     * This blocks creative players from opening containers
+     * 
+     * @param event The player interact event
+     */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        
+        // Only handle right-click actions on blocks
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+        
+        // Skip if the player is not in creative mode
+        if (player.getGameMode() != GameMode.CREATIVE) {
+            return;
+        }
+        
+        // Skip if the player has bypass permission
+        if (player.hasPermission("modemanager.bypass.containerinteraction")) {
+            return;
+        }
+        
+        Block block = event.getClickedBlock();
+        if (block == null) {
+            return;
+        }
+        
+        // Check if the config option is enabled
+        if (!plugin.getConfig().getBoolean("protection.prevent-creative-container-interaction", true)) {
+            return;
+        }
+        
+        // Check if the block is a container
+        if (isContainer(block.getType())) {
+            event.setCancelled(true);
+            plugin.getMessageUtil().sendMessage(player, "creative-container-blocked");
+            plugin.logDebug("Prevented " + player.getName() + " from interacting with container in creative mode: " + block.getType().name());
         }
     }
+    
+
 } 

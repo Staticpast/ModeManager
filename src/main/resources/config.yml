@@ -42,17 +42,13 @@ protection:
   # Prevent players from dropping items while in creative mode
   prevent-creative-drops: true
   
-  # Prevent transferring items between modes via ender chests
-  prevent-ender-chest-transfers: true
-  
-  # Prevent players from placing items in containers while in creative mode
-  prevent-creative-container-placement: true
-  
-  # Prevent players from taking items from containers while in creative mode
-  prevent-creative-container-taking: true
-  
   # Prevent players from placing containers in creative mode
   prevent-creative-container-blocks: true
+  
+  # Prevent creative mode players from interacting with containers (opening, placing items, taking items, etc.)
+  # When enabled, creative players cannot open chests, furnaces, item frames, mob spawners, or any other container
+  # Bypass permission: modemanager.bypass.containerinteraction
+  prevent-creative-container-interaction: true
   
   # Prevent players from spawning mobs in creative mode
   prevent-creative-mob-spawning: true
