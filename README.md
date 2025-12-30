@@ -1,6 +1,6 @@
 # ModeManager
 
-A Minecraft Spigot plugin that allows players to switch between survival and creative modes while maintaining separate inventories and preventing cross-mode item transfers.
+A Minecraft Spigot plugin that lets players switch between Survival and Creative modes with separate inventories. Items, blocks, and drops are kept mode-specific.
 
 [![Java](https://img.shields.io/badge/Java-21-red.svg)](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.21.11-green.svg)](https://www.minecraft.net/)
@@ -9,11 +9,11 @@ A Minecraft Spigot plugin that allows players to switch between survival and cre
 
 ## Features
 
-* 🔄 Seamless switching between survival and creative modes
-* 🎒 Separate inventories for each gamemode
-* 🛡️ Prevents item transfers between gamemodes
-* 🏗️ Creative-built blocks are protected from survival mining
-* 🚫 Blocks dropping items in creative mode
+* 🔄 Switch between Survival and Creative modes with `/mode`
+* 🎒 Separate inventories for each mode
+* 🛡️ Items can't move between modes
+* 🏗️ Creative-built blocks are mine-protected in Survival
+* 🚫 Creative mode drops no items on mode switch
 * 👮 Admin tools to monitor and manage player mode usage
 
 ## Installation
@@ -25,31 +25,41 @@ A Minecraft Spigot plugin that allows players to switch between survival and cre
 
 ## Usage
 
-Players with appropriate permissions can switch modes using simple commands. The plugin handles all inventory management and protection automatically.
+ModeManager allows players to switch between game modes with simple commands. The plugin automatically manages inventories and block protection when switching modes.
 
 ### Commands
 
-* `/mode survival` - Switch to survival mode
-* `/mode creative` - Switch to creative mode
-* `/mode status` - Check your current mode and statistics
-* `/mode admin list` - List all players and their current modes (admin only)
-* `/mode admin check <player>` - Check a specific player's mode history (admin only)
-* `/mode admin force <player> <mode> [reason]` - Force a player into a specific mode (admin only)
+#### Player Commands
+* `/mode survival` - Switch to Survival mode
+* `/mode creative` - Switch to Creative mode
+* `/mode status` - View your current mode and playtime statistics
+
+#### Admin Commands
+* `/mode admin list` - List all players and their current modes
+* `/mode admin check <player>` - View a player's mode history
+* `/mode admin force <player> <mode> [reason]` - Force a player to a specific mode
+* `/mode reload` - Reload plugin configuration
+* `/mode debug` - Toggle debug mode
+* `/mode update` - Receive update notifications
 
 ### Permissions
 
-* `modemanager.use` - Permission to use mode switching (default: true)
-* `modemanager.creative` - Permission to access creative mode (default: op)
-* `modemanager.admin` - Admin permissions for monitoring and management (default: op)
-* `modemanager.admin.list` - Permission to list all players and their modes (default: op)
-* `modemanager.admin.check` - Permission to check a player's mode history (default: op)
-* `modemanager.admin.force` - Permission to force a player into a specific mode (default: op)
-* `modemanager.reload` - Permission to reload the plugin configuration (default: op)
-* `modemanager.debug` - Permission to toggle debug mode (default: op)
-* `modemanager.update` - Permission to receive update notifications (default: op)
-* `modemanager.bypass.itemrestrictions` - Bypass item restrictions in creative mode (default: op)
-* `modemanager.bypass.containerplacement` - Bypass container placement restrictions (default: op)
-* `modemanager.bypass.mobspawning` - Bypass mob spawning restrictions in creative mode (default: op)
+#### Core Permissions
+* `modemanager.use` - Use mode switching (default: all players)
+* `modemanager.creative` - Access Creative mode (default: ops only)
+
+#### Admin Permissions
+* `modemanager.admin` - Access all admin commands (default: ops only)
+* `modemanager.admin.list` - View all players' modes (default: ops only)
+* `modemanager.admin.check` - Check a player's history (default: ops only)
+* `modemanager.admin.force` - Force mode changes (default: ops only)
+* `modemanager.reload` - Reload configuration (default: ops only)
+* `modemanager.debug` - Toggle debug mode (default: ops only)
+* `modemanager.update` - Receive update notifications (default: ops only)
+* `modemanager.bypass.itemrestrictions` - Bypass item restrictions in Creative mode (default: ops only)
+* `modemanager.bypass.containerplacement` - Bypass container placement restrictions (default: ops only)
+* `modemanager.bypass.containerinteraction` - Bypass container interaction restrictions in Creative mode (default: ops only)
+* `modemanager.bypass.mobspawning` - Bypass mob spawning restrictions in Creative mode (default: ops only)
 
 ## Configuration
 
